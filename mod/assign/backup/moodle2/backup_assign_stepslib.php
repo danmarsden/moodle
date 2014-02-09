@@ -74,6 +74,7 @@ class backup_assign_activity_structure_step extends backup_activity_structure_st
                                                   'sendlatenotifications',
                                                   'sendstudentnotifications',
                                                   'duedate',
+                                                  'displayduedate',
                                                   'cutoffdate',
                                                   'gradingduedate',
                                                   'allowsubmissionsfromdate',

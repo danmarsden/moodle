@@ -478,20 +478,25 @@ function assign_extend_settings_navigation(settings_navigation $settings, naviga
  * Given a course_module object, this function returns any "extra" information that may be needed
  * when printing this activity in a course listing.  See get_array_of_activities() in course/lib.php.
  *
+ * We store additional information in customdata, so function {@see assign_cm_info_view()} does
+ * not need to do DB queries.
+ *
  * @param stdClass $coursemodule The coursemodule object (record).
  * @return cached_cm_info An object on information that the courses
  *                        will know about (most noticeably, an icon).
  */
 function assign_get_coursemodule_info($coursemodule) {
-    global $CFG, $DB;
+    global $DB;
 
     $dbparams = array('id'=>$coursemodule->instance);
-    $fields = 'id, name, alwaysshowdescription, allowsubmissionsfromdate, intro, introformat, completionsubmit';
+    $fields = 'id, name, alwaysshowdescription, allowsubmissionsfromdate, intro, introformat, completionsubmit,
+     duedate, displayduedate';
     if (! $assignment = $DB->get_record('assign', $dbparams, $fields)) {
         return false;
     }
 
     $result = new cached_cm_info();
+    $result->customdata['assignment'] = $assignment;
     $result->name = $assignment->name;
     if ($coursemodule->showdescription) {
         if ($assignment->alwaysshowdescription || time() > $assignment->allowsubmissionsfromdate) {
@@ -506,6 +511,35 @@ function assign_get_coursemodule_info($coursemodule) {
     }
 
     return $result;
+}
+
+/**
+ * Adds the due date field to the display of the content if set.
+ *
+ * @param cm_info $cm
+ */
+function assign_cm_info_view(cm_info $cm) {
+    global $CFG, $USER;
+    require_once($CFG->dirroot . '/mod/assign/locallib.php');
+    if (empty($cm->customdata['assignment'])) {
+        return;
+    }
+    $assignment = $cm->customdata['assignment'];
+    if (($assignment->duedate > 0) && ($assignment->displayduedate)) {
+        $assign = new assign($cm->context, $cm, $cm->course);
+        // Check if there is an override for this user.
+        $overrides = $assign->override_exists($USER->id);
+        if (!empty($overrides->duedate)) {
+            $duedate = $overrides->duedate;
+        } else {
+            $duedate = $assign->get_instance($USER->id)->duedate;
+        }
+
+        $result = html_writer::start_tag('div', array('class' => 'due-date'));
+        $result .= html_writer::tag('p', get_string('duedate', 'assign') . ': ' . userdate($duedate));
+        $result .= html_writer::end_tag('div');
+        $cm->set_after_link($result);
+    }
 }
 
 /**

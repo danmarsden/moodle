@@ -1006,6 +1006,11 @@
     text-align: center;
 }
 
+.section .activity.modtype_assign .activityinstance .due-date {
+    display: block;
+    margin-left: 2em;
+}
+
 @media (max-width: 767px) {
     .path-mod-assign.pagelayout-embedded {
         overflow: auto;

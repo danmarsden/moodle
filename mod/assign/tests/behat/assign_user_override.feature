@@ -74,7 +74,7 @@ Feature: Assign user override
     And I should see "Sam2 Student2"
 
   @javascript
-  Scenario: Allow a user to have a different due date
+  Scenario: Allow a user to have a different due date and allow teacher to display due date on course page.
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
     When I follow "Test assignment name"
@@ -88,6 +88,7 @@ Feature: Assign user override
       | duedate[year]      | 2000 |
       | duedate[hour]      | 08 |
       | duedate[minute]    | 00 |
+      | displayduedate     | 1  |
     And I press "Save and display"
     And I navigate to "User overrides" in current page administration
     And I press "Add user override"
@@ -104,11 +105,13 @@ Feature: Assign user override
     And I log out
     And I log in as "student2"
     And I am on "Course 1" course homepage
-    And I follow "Test assignment name"
     Then I should see "Saturday, 1 January 2000, 8:00"
+    And I follow "Test assignment name"
+    And I should see "Saturday, 1 January 2000, 8:00"
     And I log out
     And I log in as "student1"
     And I am on "Course 1" course homepage
+    And I should see "Wednesday, 1 January 2020, 8:00"
     And I follow "Test assignment name"
     And I should see "Wednesday, 1 January 2020, 8:00"
 
