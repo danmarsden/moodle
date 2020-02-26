@@ -880,6 +880,14 @@ class model {
             // The unique sample id contains both the sampleid and the rangeindex.
             list($sampleid, $rangeindex) = $this->get_time_splitting()->infer_sample_info($uniquesampleid);
             if ($this->get_target()->triggers_callback($prediction->prediction, $prediction->predictionscore)) {
+                try {
+                    // Check this context is valid.
+                    $this->get_analyser()->sample_access_context($sampleid);
+                } catch (\dml_missing_record_exception $e) {
+                    // Skip this record.
+                    mtrace("Skipping callback for sampleid:".$sampleid. ", the sampleid no longer exists in this context.");
+                    continue;
+                }
 
                 // Prepare the record to store the predicted values.
                 list($record, $samplecontext) = $this->prepare_prediction_record($sampleid, $rangeindex, $prediction->prediction,
