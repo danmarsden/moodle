@@ -961,7 +961,7 @@ $capabilities = array(
 
     'moodle/course:viewhiddenactivities' => array(
 
-        'captype' => 'write',
+        'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
             'teacher' => CAP_ALLOW,
@@ -1550,7 +1550,7 @@ $capabilities = array(
 
     'moodle/course:viewhiddensections' => array(
 
-        'captype' => 'write',
+        'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => array(
             'editingteacher' => CAP_ALLOW,
