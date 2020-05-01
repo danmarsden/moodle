@@ -208,15 +208,26 @@ abstract class qbehaviour_renderer extends plugin_renderer_base {
      * @return string HTML fragment.
      */
     public function manual_comment(question_attempt $qa, question_display_options $options) {
+        global $CFG;
+        $output = '';
+        if (!empty($CFG->enableplagiarism)) {
+            require_once($CFG->libdir . '/plagiarismlib.php');
+
+            $output .= plagiarism_get_links(array('component' => $qa->get_question()->qtype->plugin_name(),
+                'context' => $options->context->id,
+                'area' => $qa->get_usage_id(),
+                'itemid' => $qa->get_slot(),
+                'content' => $qa->get_response_summary()
+            ));
+        }
         if ($options->manualcomment == question_display_options::EDITABLE) {
-            return $this->manual_comment_fields($qa, $options);
+            $output .= $this->manual_comment_fields($qa, $options);
 
         } else if ($options->manualcomment == question_display_options::VISIBLE) {
-            return $this->manual_comment_view($qa, $options);
+            $output .= $this->manual_comment_view($qa, $options);
 
-        } else {
-            return '';
         }
+        return $output;
     }
 
     /**
