@@ -4,6 +4,7 @@ This files describes API changes for code that uses the plagiarism API.
 
 * The method get_form_elements_module has been deprecated. Please use {plugin name}_coursemodule_edit_post_actions() instead.
 * The method save_form_elements has been deprecated. Please use {plugin name}_coursemodule_standard_elements() instead.
+* Support for Essay question type in Quiz has now been implemented. (MDL-32226)
 
 === 3.7 ===
 
