@@ -684,7 +684,8 @@ function chat_calculate_next_chat_time(int $schedule, int $chattime): int {
  */
 function chat_update_chat_times($chatid=0) {
     // Updates chat records so that the next chat time is correct.
-    global $DB;
+    global $DB, $CFG;
+    require_once($CFG->dirroot . '/course/lib.php');
 
     $timenow = time();
 
@@ -706,10 +707,13 @@ function chat_update_chat_times($chatid=0) {
         $chat->chattime = chat_calculate_next_chat_time($chat->schedule, $chat->chattime);
         if ($originalchattime != $chat->chattime) {
             $courseids[] = $chat->course;
-        }
-        $DB->update_record("chat", $chat);
-        $event = new stdClass(); // Update calendar too.
+            $DB->update_record("chat", $chat);
 
+            $cm = get_coursemodule_from_instance('chat', $chat->id, $chat->course);
+            course_purge_module_cache($cm);
+        }
+
+        $event = new stdClass(); // Update calendar too.
         $cond = "modulename='chat' AND eventtype = :eventtype AND instance = :chatid AND timestart <> :chattime";
         $params = ['chattime' => $chat->chattime, 'eventtype' => CHAT_EVENT_TYPE_CHATTIME, 'chatid' => $chat->id];
 
@@ -723,7 +727,7 @@ function chat_update_chat_times($chatid=0) {
 
     $courseids = array_unique($courseids);
     foreach ($courseids as $courseid) {
-        rebuild_course_cache($courseid, true);
+        rebuild_course_cache($courseid, true, true);
     }
 }
 
