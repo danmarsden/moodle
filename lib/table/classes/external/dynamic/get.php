@@ -135,6 +135,11 @@ class get extends external_api {
                 VALUE_REQUIRED,
                 null
             ),
+            'contextid' => new external_value(
+                PARAM_INT,
+                'Context id of the page calling this request',
+                VALUE_DEFAULT
+            ),
         ]);
     }
 
@@ -168,7 +173,8 @@ class get extends external_api {
         ?int $pagenumber = null,
         ?int $pagesize = null,
         ?array $hiddencolumns = null,
-        ?bool $resetpreferences = null
+        ?bool $resetpreferences = null,
+        ?int $contextid = null
     ) {
         global $PAGE;
 
@@ -185,6 +191,7 @@ class get extends external_api {
             'pagesize' => $pagesize,
             'hiddencolumns' => $hiddencolumns,
             'resetpreferences' => $resetpreferences,
+            'contextid' => $contextid,
         ] = self::validate_parameters(self::execute_parameters(), [
             'component' => $component,
             'handler' => $handler,
@@ -198,6 +205,7 @@ class get extends external_api {
             'pagesize' => $pagesize,
             'hiddencolumns' => $hiddencolumns,
             'resetpreferences' => $resetpreferences,
+            'contextid' => $contextid,
         ]);
 
         $tableclass = "\\{$component}\\table\\{$handler}";
@@ -213,6 +221,10 @@ class get extends external_api {
         $filtersetclass = "{$tableclass}_filterset";
         if (!class_exists($filtersetclass)) {
             throw new \UnexpectedValueException("The filter specified ({$filtersetclass}) is invalid.");
+        }
+        if (!empty($contextid)) {
+            $context = \context::instance_by_id($contextid);
+            $PAGE->set_context($context);
         }
 
         $filterset = new $filtersetclass();
