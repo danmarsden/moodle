@@ -20,6 +20,8 @@ namespace core_user\reportbuilder\datasource;
 
 use core_reportbuilder\datasource;
 use core_reportbuilder\local\entities\user;
+use core_course\local\entities\course_enrolments;
+use core_reportbuilder\local\entities\course;
 use core_reportbuilder\local\helpers\database;
 
 /**
@@ -63,6 +65,33 @@ class users extends datasource {
         $this->add_columns_from_entity($userentityname);
         $this->add_filters_from_entity($userentityname);
         $this->add_conditions_from_entity($userentityname);
+
+        // Add course enrolment entity.
+        $enrolmententity = new course_enrolments();
+        $uetablealias = $enrolmententity->get_table_alias('user_enrolments');
+        $enrolalias = $enrolmententity->get_table_alias('enrol');
+
+        // Join enrolments entity to users entity.
+        $userenrolmentjoin = "JOIN {user_enrolments} {$uetablealias}
+                              ON {$uetablealias}.userid = {$usertablealias}.id";
+
+        $this->add_entity($enrolmententity->add_join($userenrolmentjoin));
+
+        $enrolmententityname = $enrolmententity->get_entity_name();
+        $this->add_columns_from_entity($enrolmententityname);
+        $this->add_filters_from_entity($enrolmententityname);
+        $this->add_conditions_from_entity($enrolmententityname);
+
+        // Add course entity.
+        $courseentity = new course();
+        $coursetablealias = $courseentity->get_table_alias('course');
+        $coursejoin = "JOIN {course} {$coursetablealias} ON {$coursetablealias}.id = {$enrolalias}.courseid";
+
+        $this->add_entity($courseentity->add_join($coursejoin));
+        $courseentityname = $courseentity->get_entity_name();
+        $this->add_columns_from_entity($courseentityname);
+        $this->add_filters_from_entity($courseentityname);
+        $this->add_conditions_from_entity($courseentityname);
     }
 
     /**
