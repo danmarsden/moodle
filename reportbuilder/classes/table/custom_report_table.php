@@ -195,12 +195,16 @@ class custom_report_table extends base_report_table {
      */
     public function format_row($row) {
         $columns = $this->get_active_columns();
+        if ($this->is_downloading() && $this->download == 'csv') {
+            $functionname = "format_value_download";
+        } else {
+            $functionname = "format_value";
+        }
 
         $formattedrow = [];
         foreach ($columns as $column) {
-            $formattedrow[$column->get_column_alias()] = $column->format_value((array) $row);
+            $formattedrow[$column->get_column_alias()] = $column->$functionname((array) $row);
         }
-
         return $formattedrow;
     }
 
