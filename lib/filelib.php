@@ -3222,6 +3222,7 @@ class curl {
         $this->options['CURLOPT_SSL_VERIFYPEER']    = 0;
         $this->options['CURLOPT_SSL_VERIFYHOST']    = 2;
         $this->options['CURLOPT_CONNECTTIMEOUT']    = 30;
+        $this->options['CURLOPT_TIMEOUT']           = HOURSECS; // Set default timeout of one hour.
 
         if ($cacert = self::get_cacert()) {
             $this->options['CURLOPT_CAINFO'] = $cacert;
