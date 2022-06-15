@@ -67,6 +67,7 @@ $string['error_indexing'] = 'An error occurred while indexing';
 $string['errors'] = 'Errors';
 $string['errorareanotavailable'] = '{$a} search area is not available.';
 $string['everywhere'] = 'Everywhere you can access';
+$string['exportresults'] = 'Export results as:';
 $string['filesinindexdirectory'] = 'Files in index directory';
 $string['filterheader'] = 'Filter';
 $string['fromtime'] = 'Modified after';

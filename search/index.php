@@ -30,6 +30,7 @@ $title = optional_param('title', '', PARAM_NOTAGS);
 $contextid = optional_param('context', 0, PARAM_INT);
 $cat = optional_param('cat', '', PARAM_NOTAGS);
 $mycoursesonly = optional_param('mycoursesonly', 0, PARAM_INT);
+$dataformat = optional_param('dataformat', '', PARAM_ALPHA);
 
 if (\core_search\manager::is_search_area_categories_enabled()) {
     $cat = \core_search\manager::get_search_area_category_by_name($cat);
@@ -167,14 +168,33 @@ if ($cat instanceof \core_search\area_category) {
 $url = new moodle_url('/search/index.php', $urlparams);
 $PAGE->set_url($url);
 
+// Get the results.
+if ($data) {
+    if (!empty($dataformat)) {
+        $results = $search->search($data);
+        $rows = [];
+        foreach ($results as $hit) {
+            $docdata = $hit->export_for_template($searchrenderer);
+            $rows[] = [$docdata['title'], $docdata['description1'], $docdata['description2'],
+                       $docdata['coursefullname'], $docdata['courseurl']->out(), $docdata['contexturl']->out(),
+                       $docdata['modified'], $docdata['content']];
+        }
+        \core\dataformat::download_data(
+            'searchresults',
+            $dataformat,
+            ['title', 'description1', 'description2', 'coursefullname', 'courseurl', 'itemurl',
+             'modified', 'content'],
+            $rows);
+        die;
+        exit;
+    } else {
+        $results = $search->paged_search($data, $page);
+    }
+}
+
 // We are ready to render.
 echo $OUTPUT->header();
 echo $OUTPUT->heading($pagetitle);
-
-// Get the results.
-if ($data) {
-    $results = $search->paged_search($data, $page);
-}
 
 // Show search information if configured by system administrator.
 if ($CFG->searchbannerenable && $CFG->searchbanner) {
@@ -195,6 +215,11 @@ if (!empty($results)) {
         echo $searchrenderer->render_top_results($topresults);
     }
     echo $searchrenderer->render_results($results->results, $results->actualpage, $results->totalcount, $url, $cat);
+
+    if (!empty($results->results)) { // If we have results, allow them to be downloaded.
+        echo $OUTPUT->download_dataformat_selector(get_string('exportresults', 'search'), $PAGE->url, 'dataformat',
+                                                    $PAGE->url->params());
+    }
 
     \core_search\manager::trigger_search_results_viewed([
         'q' => $data->q,
