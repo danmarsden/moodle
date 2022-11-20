@@ -96,6 +96,16 @@ class system_report_table extends base_report_table {
                 array_flip($this->report->get_exclude_columns_for_download()));
         }
 
+        // If we are aggregating any columns, we should group by the remaining ones.
+        $aggregatedcolumns = array_filter($columns, static function(column $column): bool {
+            return !empty($column->get_aggregation());
+        });
+
+        // Also take account of the report setting to show unique rows (only if no columns are being aggregated).
+        $hasaggregatedcolumns = !empty($aggregatedcolumns);
+        $showuniquerows = !$hasaggregatedcolumns && $this->persistent->get('uniquerows');
+        $groupby = [];
+
         $columnheaders = $columnsattributes = [];
         $columnindex = 1;
         foreach ($columns as $identifier => $column) {
@@ -106,6 +116,12 @@ class system_report_table extends base_report_table {
             // Specify whether column should behave as a user fullname column unless the column has a custom title set.
             if (preg_match('/^user:fullname.*$/', $column->get_unique_identifier()) && !$column->has_custom_title()) {
                 $this->userfullnamecolumns[] = $column->get_column_alias();
+            }
+
+            // We need to determine for each column whether we should group by it's fields, to support aggregation.
+            $columnaggregation = $column->get_aggregation();
+            if ($showuniquerows || ($hasaggregatedcolumns && empty($columnaggregation))) {
+                $groupby = array_merge($groupby, $column->get_groupby_sql());
             }
 
             // Add each columns fields, joins and params to our report.
@@ -149,7 +165,7 @@ class system_report_table extends base_report_table {
 
         // Initialise table SQL properties.
         $fieldsql = implode(', ', $fields);
-        $this->init_sql($fieldsql, "{{$maintable}} {$maintablealias}", $joins, $where, $params);
+        $this->init_sql($fieldsql, "{{$maintable}} {$maintablealias}", $joins, $where, $params, $groupby);
     }
 
     /**
