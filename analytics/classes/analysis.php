@@ -529,12 +529,9 @@ class analysis {
                     // We don't want newcalculations array to grow too much as we already keep the
                     // system memory busy storing $dataset contents.
 
-                    // Insert from the beginning.
-                    $remaining = array_splice($newcalculations, $batchsize);
-
                     // Sorry mssql and oracle, this will be slow.
                     $DB->insert_records('analytics_indicator_calc', $newcalculations);
-                    $newcalculations = $remaining;
+                    $newcalculations = [];
                 }
             }
         }
