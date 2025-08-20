@@ -1095,6 +1095,7 @@ $cache = ' . var_export($cache, true) . ';
     public static function get_component_classes_in_namespace($component = null, $namespace = '') {
 
         $classes = [];
+        self::init();
 
         // Only look for components if a component name is set or a namespace is set.
         if (isset($component) || !empty($namespace)) {
